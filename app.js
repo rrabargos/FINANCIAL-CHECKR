@@ -115,6 +115,73 @@ function deleteActiveProfile() {
 }
 
 
+// ── SHARE / URL IMPORT ────────────────────────────────────
+const SHARE_FIELDS = [
+  'name','purchasePrice','unitSize','birValuePerSqm','loanAmount','condoDues',
+  'interestRate','loanTerm','monthlyIncome','salaryGrowth','monthlyRent',
+  'emergencyFund','condoInflation','cgtPct','dstPct','transferTaxPct',
+  'regFeePct','notarialPct','bankFeesPct','renovationCost'
+];
+
+function encodeProfile(profile) {
+  const slim = {};
+  SHARE_FIELDS.forEach(k => { if (profile[k] !== undefined) slim[k] = profile[k]; });
+  return btoa(unescape(encodeURIComponent(JSON.stringify(slim))));
+}
+
+function decodeProfile(str) {
+  try { return JSON.parse(decodeURIComponent(escape(atob(str)))); }
+  catch { return null; }
+}
+
+function shareActiveProfile() {
+  saveCurrentToProfile();
+  const encoded = encodeProfile(getActiveProfile());
+  const url = location.origin + location.pathname + '?p=' + encoded;
+
+  const doCopy = () => {
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('🔗 Link copied to clipboard!'))
+      .catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        Object.assign(ta.style, { position:'fixed', top:'-9999px', opacity:'0' });
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('🔗 Link copied!');
+      });
+  };
+  doCopy();
+}
+
+function loadFromUrl() {
+  const p = new URLSearchParams(location.search).get('p');
+  if (!p) return false;
+  const data = decodeProfile(p);
+  if (!data) { showToast('⚠️ Invalid share link'); return false; }
+
+  // If same-name profile exists, update it; otherwise create new
+  const existing = profiles.find(pr => pr.name === data.name);
+  if (existing) {
+    const idx = profiles.indexOf(existing);
+    profiles[idx] = { ...existing, ...data };
+    saveProfiles(profiles);
+    activeId = existing.id;
+  } else {
+    const newP = { ...FEE_DEFAULTS, ...data, id: uid() };
+    profiles.push(newP);
+    saveProfiles(profiles);
+    activeId = newP.id;
+  }
+  setActiveId(activeId);
+  loadProfileIntoInputs(getActiveProfile());
+  history.replaceState(null, '', location.pathname); // clean URL
+  showToast('📥 Loaded shared profile: ' + (data.name || 'Profile'));
+  return true;
+}
+
 // ── CHARTS (singleton refs) ────────────────────────────────
 let incomeExpChart, pieChart, buyvrentChart;
 
@@ -517,9 +584,10 @@ function resetDefaults() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Init profiles
+  // Init profiles — load from share URL first, then normal flow
   ensureActiveId();
-  loadProfileIntoInputs(getActiveProfile());
+  const loadedFromUrl = loadFromUrl();
+  if (!loadedFromUrl) loadProfileIntoInputs(getActiveProfile());
   renderProfileTabs();
 
   syncSlider('interestRateSlider', 'interestRate');
@@ -543,6 +611,9 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('headerSubtitle').textContent = 'Philippines · ' + (e.target.value || 'Untitled');
     }
   });
+
+  // Share button
+  document.getElementById('shareProfileBtn').addEventListener('click', shareActiveProfile);
 
   // Save button
   document.getElementById('saveProfileBtn').addEventListener('click', () => {
