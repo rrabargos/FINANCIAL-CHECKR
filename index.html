@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Condo Financial Analyzer – Pine Crest Case Study | Philippines</title>
+  <meta name="description" content="Interactive condo financial decision analyzer for the Philippines. Analyze Pine Crest by Vista Residences – compare buy vs rent, risk scores, and lifetime cost projections." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-logo">
+        <div class="logo-icon">🏢</div>
+        <div class="header-titles">
+          <h1 class="app-title">Condo Financial Analyzer</h1>
+          <span class="app-subtitle" id="headerSubtitle">Philippines · Pine Crest Case Study</span>
+        </div>
+      </div>
+      <div class="header-badge" id="riskBadge">
+        <span class="badge-dot"></span>
+        <span class="badge-text">Calculating…</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-layout">
+    <!-- LEFT PANEL: Inputs -->
+    <aside class="input-panel" id="inputPanel">
+
+      <!-- ── PROFILE SWITCHER ── -->
+      <div class="profile-bar" id="profileBar">
+        <!-- Row 1: tabs -->
+        <div class="profile-tabs-row">
+          <div class="profile-tabs" id="profileTabs"><!-- JS --></div>
+        </div>
+        <!-- Row 2: actions -->
+        <div class="profile-actions-row">
+          <span class="profile-actions-label">Profiles</span>
+          <div class="profile-actions">
+            <button class="prof-action-btn" id="newProfileBtn" title="New profile">
+              <span class="btn-icon">＋</span>
+              <span class="btn-label">New</span>
+            </button>
+            <button class="prof-action-btn" id="saveProfileBtn" title="Save current">
+              <span class="btn-icon">💾</span>
+              <span class="btn-label">Save</span>
+            </button>
+            <button class="prof-action-btn danger" id="deleteProfileBtn" title="Delete profile">
+              <span class="btn-icon">🗑</span>
+              <span class="btn-label">Delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-header">
+        <span class="panel-icon">⚙️</span>
+        <div class="profile-name-wrap">
+          <input type="text" id="profileName" class="profile-name-input" value="Pine Crest" maxlength="32" />
+        </div>
+        <button class="reset-btn" id="resetBtn" title="Reset to defaults">↺ Reset</button>
+      </div>
+
+      <!-- Property Section -->
+      <section class="input-section">
+        <div class="section-label">🏠 Property Details</div>
+
+        <div class="input-group">
+          <label for="purchasePrice">Purchase Price (₱)</label>
+          <div class="input-with-icon">
+            <span class="currency-prefix">₱</span>
+            <input type="number" id="purchasePrice" value="4615000" min="0" step="1000" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="unitSize">Unit Size (sqm)</label>
+          <input type="number" id="unitSize" value="59.93" min="1" step="0.01" />
+        </div>
+
+        <div class="input-group">
+          <label for="birValuePerSqm">BIR Value per sqm (₱)</label>
+          <div class="input-with-icon">
+            <span class="currency-prefix">₱</span>
+            <input type="number" id="birValuePerSqm" value="138000" min="0" step="1000" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="loanAmount">Loan Amount (₱)</label>
+          <div class="input-with-icon">
+            <span class="currency-prefix">₱</span>
+            <input type="number" id="loanAmount" value="4000000" min="0" step="10000" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="condoDues">Monthly Condo Dues (₱)</label>
+          <div class="input-with-icon">
+            <span class="currency-prefix">₱</span>
+            <input type="number" id="condoDues" value="6800" min="0" step="100" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Loan Section -->
+      <section class="input-section">
+        <div class="section-label">💳 Loan Terms</div>
+
+        <div class="input-group">
+          <label for="interestRate">Interest Rate (%)</label>
+          <input type="range" id="interestRateSlider" min="1" max="15" step="0.25" value="4" class="slider" />
+          <div class="slider-value-row">
+            <input type="number" id="interestRate" value="4" min="1" max="15" step="0.25" class="slider-input" />
+            <span class="slider-pct">%</span>
+          </div>
+          <div class="stress-presets">
+            <button class="preset-btn" data-rate="4" id="preset4">Base 4%</button>
+            <button class="preset-btn" data-rate="7" id="preset7">Shock 7%</button>
+            <button class="preset-btn" data-rate="9" id="preset9">Severe 9%</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="loanTerm">Loan Term (years)</label>
+          <input type="number" id="loanTerm" value="25" min="1" max="30" step="1" />
+        </div>
+      </section>
+
+      <!-- Personal Finance Section -->
+      <section class="input-section">
+        <div class="section-label">👤 Your Financial Profile</div>
+
+        <div class="input-group">
+          <label for="monthlyIncome">Monthly Net Income (₱)</label>
+          <div class="input-with-icon">
+            <span class="currency-prefix">₱</span>
+            <input type="number" id="monthlyIncome" value="60000" min="0" step="1000" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="salaryGrowth">Annual Salary Growth (%)</label>
+          <input type="range" id="salaryGrowthSlider" min="0" max="15" step="0.5" value="5" class="slider" />
+          <div class="slider-value-row">
+            <input type="number" id="salaryGrowth" value="5" min="0" max="15" step="0.5" class="slider-input" />
+            <span class="slider-pct">%</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="monthlyRent">Monthly Rent Equivalent (₱)</label>
+          <div class="input-with-icon">
+            <span class="currency-prefix">₱</span>
+            <input type="number" id="monthlyRent" value="25000" min="0" step="500" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="emergencyFund">Emergency Fund (₱) <span class="optional-tag">Optional</span></label>
+          <div class="input-with-icon">
+            <span class="currency-prefix">₱</span>
+            <input type="number" id="emergencyFund" value="" placeholder="e.g. 300000" min="0" step="10000" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="condoInflation">Condo Dues Annual Inflation (%)</label>
+          <input type="range" id="condoInflationSlider" min="0" max="15" step="0.5" value="5" class="slider" />
+          <div class="slider-value-row">
+            <input type="number" id="condoInflation" value="5" min="0" max="15" step="0.5" class="slider-input" />
+            <span class="slider-pct">%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Fees & Renovation Section -->
+      <section class="input-section">
+        <div class="section-label">📋 Closing Fees & Renovation</div>
+
+        <div class="fees-grid">
+          <div class="input-group">
+            <label for="cgtPct">CGT % <span class="fee-basis">BIR value</span></label>
+            <div class="fee-input-wrap">
+              <input type="number" id="cgtPct" value="6" min="0" max="20" step="0.1" />
+              <span class="fee-pct-suffix">%</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="dstPct">DST % <span class="fee-basis">price</span></label>
+            <div class="fee-input-wrap">
+              <input type="number" id="dstPct" value="1.5" min="0" max="10" step="0.1" />
+              <span class="fee-pct-suffix">%</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="transferTaxPct">Transfer Tax % <span class="fee-basis">price</span></label>
+            <div class="fee-input-wrap">
+              <input type="number" id="transferTaxPct" value="0.75" min="0" max="10" step="0.05" />
+              <span class="fee-pct-suffix">%</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="regFeePct">Registration % <span class="fee-basis">price</span></label>
+            <div class="fee-input-wrap">
+              <input type="number" id="regFeePct" value="0.35" min="0" max="5" step="0.05" />
+              <span class="fee-pct-suffix">%</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="notarialPct">Notarial % <span class="fee-basis">price</span></label>
+            <div class="fee-input-wrap">
+              <input type="number" id="notarialPct" value="1" min="0" max="5" step="0.1" />
+              <span class="fee-pct-suffix">%</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="bankFeesPct">Bank Fees % <span class="fee-basis">loan</span></label>
+            <div class="fee-input-wrap">
+              <input type="number" id="bankFeesPct" value="1.5" min="0" max="10" step="0.1" />
+              <span class="fee-pct-suffix">%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-top:10px">
+          <label for="renovationCost">🔨 Renovation Budget (₱) <span class="optional-tag">Optional</span></label>
+          <div class="input-with-icon">
+            <span class="currency-prefix">₱</span>
+            <input type="number" id="renovationCost" value="" placeholder="e.g. 150,000" min="0" step="5000" />
+          </div>
+        </div>
+      </section>
+
+      <button class="analyze-btn" id="analyzeBtn">
+        <span>🔍 Analyze Now</span>
+      </button>
+    </aside>
+
+
+    <!-- RIGHT PANEL: Dashboard -->
+    <div class="results-panel" id="resultsPanel">
+
+      <!-- Risk Score Gauge Row -->
+      <div class="gauge-row">
+        <div class="card gauge-card">
+          <div class="card-title">Risk Score</div>
+          <div class="gauge-container">
+            <canvas id="gaugeCanvas" width="260" height="150"></canvas>
+            <div class="gauge-center-text">
+              <span class="gauge-score" id="gaugeScore">–</span>
+              <span class="gauge-denom">/12</span>
+            </div>
+          </div>
+          <div class="gauge-label" id="gaugeLabel">–</div>
+        </div>
+
+        <div class="card summary-card">
+          <div class="card-title">Decision Summary</div>
+          <div class="decision-verdict" id="decisionVerdict">–</div>
+          <div class="decision-sub" id="decisionSub">Enter your parameters and click Analyze.</div>
+          <button class="explain-btn" id="explainBtn">
+            <span>✨ Explain My Result</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Monthly Breakdown -->
+      <div class="cards-row">
+        <div class="card metric-card">
+          <div class="metric-icon">📅</div>
+          <div class="card-title">Monthly Amortization</div>
+          <div class="metric-value" id="metMonthlyAmt">₱–</div>
+          <div class="metric-label">Principal + Interest</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-icon">🏢</div>
+          <div class="card-title">Total Monthly Cost</div>
+          <div class="metric-value" id="metTotalMonthly">₱–</div>
+          <div class="metric-label">Loan + Condo Dues</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-icon">💰</div>
+          <div class="card-title">Remaining Income</div>
+          <div class="metric-value" id="metRemaining">₱–</div>
+          <div class="metric-label">After housing costs</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-icon">📊</div>
+          <div class="card-title">Debt-to-Income</div>
+          <div class="metric-value" id="metDTI">–%</div>
+          <div class="metric-label">Housing / Net Income</div>
+          <div class="dti-bar-wrap"><div class="dti-bar" id="dtiBar"></div></div>
+        </div>
+      </div>
+
+      <!-- Upfront Cash Breakdown -->
+      <div class="card">
+        <div class="card-title">💸 Upfront Cash Breakdown</div>
+        <div class="upfront-grid" id="upfrontGrid">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="charts-row">
+        <div class="card chart-card">
+          <div class="card-title">📈 Income vs Monthly Costs</div>
+          <canvas id="incomeExpChart" height="220"></canvas>
+        </div>
+        <div class="card chart-card">
+          <div class="card-title">🥧 Monthly Cost Breakdown</div>
+          <canvas id="pieChart" height="220"></canvas>
+        </div>
+      </div>
+
+      <!-- Buy vs Rent -->
+      <div class="card">
+        <div class="card-title">🏠 Buy vs Rent – 25-Year Comparison</div>
+        <div class="buyvrent-summary" id="buyvrentSummary"><!-- JS --></div>
+        <canvas id="buyvrentChart" height="280"></canvas>
+      </div>
+
+      <!-- Loan Summary -->
+      <div class="card">
+        <div class="card-title">🔢 Full Loan Summary</div>
+        <div class="loan-grid" id="loanGrid"><!-- JS --></div>
+      </div>
+
+      <!-- Stress Test Section -->
+      <div class="card stress-card">
+        <div class="card-title">⚡ Stress Test Scenarios</div>
+        <div class="stress-table-wrap">
+          <table class="stress-table" id="stressTable">
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Interest Rate</th>
+                <th>Monthly Cost</th>
+                <th>DTI</th>
+                <th>Risk Score</th>
+                <th>Verdict</th>
+              </tr>
+            </thead>
+            <tbody id="stressBody"><!-- JS --></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Risk Score Breakdown -->
+      <div class="card">
+        <div class="card-title">🎯 Risk Score Breakdown</div>
+        <div class="risk-breakdown" id="riskBreakdown"><!-- JS --></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- AI Explain Modal -->
+  <div class="modal-overlay" id="explainModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span>✨ AI Financial Summary</span>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"><!-- JS --></div>
+    </div>
+  </div>
+
+  <!-- New Profile Modal -->
+  <div class="modal-overlay" id="newProfileModal">
+    <div class="modal-box" style="max-width:420px">
+      <div class="modal-header">
+        <span>➕ New Property Profile</span>
+        <button class="modal-close" id="newProfileClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom:14px;color:var(--text-muted)">Choose how to start the new profile:</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="analyze-btn" id="newBlankBtn" style="background:var(--surface3);box-shadow:none;border:1px solid var(--border)">📄 Start Blank (empty values)</button>
+          <button class="analyze-btn" id="newCopyBtn">📋 Copy Current Profile</button>
+        </div>
+        <div style="margin-top:16px">
+          <label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:6px">Profile Name</label>
+          <input type="text" id="newProfileName" class="profile-name-input" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:0.9rem" placeholder="e.g. SMDC Wind Residences" maxlength="32" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
