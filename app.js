@@ -123,25 +123,29 @@ const SHARE_FIELDS = [
   'regFeePct','notarialPct','bankFeesPct','renovationCost'
 ];
 
-function encodeProfile(profile) {
-  const slim = {};
-  SHARE_FIELDS.forEach(k => { if (profile[k] !== undefined) slim[k] = profile[k]; });
-  return btoa(unescape(encodeURIComponent(JSON.stringify(slim))));
+function encodeProfiles(profilesArr, active) {
+  const slimProfiles = profilesArr.map(profile => {
+    const slim = { id: profile.id };
+    SHARE_FIELDS.forEach(k => { if (profile[k] !== undefined) slim[k] = profile[k]; });
+    return slim;
+  });
+  const data = { profiles: slimProfiles, activeId: active };
+  return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
 }
 
-function decodeProfile(str) {
+function decodeData(str) {
   try { return JSON.parse(decodeURIComponent(escape(atob(str)))); }
   catch { return null; }
 }
 
-function shareActiveProfile() {
+function shareAllProfiles() {
   saveCurrentToProfile();
-  const encoded = encodeProfile(getActiveProfile());
-  const url = location.origin + location.pathname + '?p=' + encoded;
+  const encoded = encodeProfiles(profiles, activeId);
+  const url = location.origin + location.pathname + '?d=' + encoded;
 
   const doCopy = () => {
     navigator.clipboard.writeText(url)
-      .then(() => showToast('🔗 Link copied to clipboard!'))
+      .then(() => showToast('🔗 All profiles link copied!'))
       .catch(() => {
         const ta = document.createElement('textarea');
         ta.value = url;
@@ -150,36 +154,67 @@ function shareActiveProfile() {
         ta.select();
         document.execCommand('copy');
         document.body.removeChild(ta);
-        showToast('🔗 Link copied!');
+        showToast('🔗 All profiles link copied!');
       });
   };
   doCopy();
 }
 
 function loadFromUrl() {
-  const p = new URLSearchParams(location.search).get('p');
-  if (!p) return false;
-  const data = decodeProfile(p);
-  if (!data) { showToast('⚠️ Invalid share link'); return false; }
+  const params = new URLSearchParams(location.search);
+  const d = params.get('d');
+  const p = params.get('p'); // legacy
 
-  // If same-name profile exists, update it; otherwise create new
-  const existing = profiles.find(pr => pr.name === data.name);
-  if (existing) {
-    const idx = profiles.indexOf(existing);
-    profiles[idx] = { ...existing, ...data };
+  if (!d && !p) return false;
+
+  if (d) {
+    const data = decodeData(d);
+    if (!data || !Array.isArray(data.profiles)) { showToast('⚠️ Invalid share link'); return false; }
+
+    data.profiles.forEach(imported => {
+      const existing = profiles.find(pr => pr.id === imported.id || pr.name === imported.name);
+      if (existing) {
+        const idx = profiles.indexOf(existing);
+        profiles[idx] = { ...existing, ...imported };
+      } else {
+        profiles.push({ ...FEE_DEFAULTS, ...imported, id: imported.id || uid() });
+      }
+    });
+    if (data.activeId && profiles.find(pr => pr.id === data.activeId)) {
+      activeId = data.activeId;
+    } else if (data.profiles.length > 0) {
+      activeId = profiles.find(pr => pr.id === data.profiles[0].id)?.id || activeId;
+    }
     saveProfiles(profiles);
-    activeId = existing.id;
-  } else {
-    const newP = { ...FEE_DEFAULTS, ...data, id: uid() };
-    profiles.push(newP);
-    saveProfiles(profiles);
-    activeId = newP.id;
+    setActiveId(activeId);
+    loadProfileIntoInputs(getActiveProfile());
+    history.replaceState(null, '', location.pathname); // clean URL
+    showToast(`📥 Loaded ${data.profiles.length} shared profiles`);
+    return true;
   }
-  setActiveId(activeId);
-  loadProfileIntoInputs(getActiveProfile());
-  history.replaceState(null, '', location.pathname); // clean URL
-  showToast('📥 Loaded shared profile: ' + (data.name || 'Profile'));
-  return true;
+
+  // Legacy single profile import
+  if (p) {
+    const data = decodeData(p);
+    if (!data) { showToast('⚠️ Invalid share link'); return false; }
+    const existing = profiles.find(pr => pr.name === data.name);
+    if (existing) {
+      const idx = profiles.indexOf(existing);
+      profiles[idx] = { ...existing, ...data };
+      saveProfiles(profiles);
+      activeId = existing.id;
+    } else {
+      const newP = { ...FEE_DEFAULTS, ...data, id: uid() };
+      profiles.push(newP);
+      saveProfiles(profiles);
+      activeId = newP.id;
+    }
+    setActiveId(activeId);
+    loadProfileIntoInputs(getActiveProfile());
+    history.replaceState(null, '', location.pathname); // clean URL
+    showToast('📥 Loaded shared profile: ' + (data.name || 'Profile'));
+    return true;
+  }
 }
 
 // ── CHARTS (singleton refs) ────────────────────────────────
@@ -613,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Share button
-  document.getElementById('shareProfileBtn').addEventListener('click', shareActiveProfile);
+  document.getElementById('shareProfileBtn').addEventListener('click', shareAllProfiles);
 
   // Save button
   document.getElementById('saveProfileBtn').addEventListener('click', () => {
