@@ -1,7 +1,7 @@
 'use strict';
 
 // \u2500\u2500 SEED PROFILES \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-const FEE_DEFAULTS = { cgtPct: 6, dstPct: 1.5, transferTaxPct: 0.75, regFeePct: 0.35, notarialPct: 1, bankFeesPct: 1.5, renovationCost: 0 };
+const FEE_DEFAULTS = { cgtPct: 6, dstPct: 1.5, transferTaxPct: 0.75, regFeePct: 0.35, notarialPct: 1, bankFeesPct: 1.5, renovationCost: 0, cgtBasis: 'higher', dstBasis: 'higher', transferTaxBasis: 'higher', regFeeBasis: 'higher', notarialBasis: 'higher', bankFeesBasis: 'loan' };
 
 const SEED_PROFILES = [
   {
@@ -83,7 +83,8 @@ function saveCurrentToProfile() {
 function loadProfileIntoInputs(profile) {
   const fields = ['purchasePrice','unitSize','birValuePerSqm','loanAmount','condoDues',
     'interestRate','loanTerm','monthlyIncome','salaryGrowth','monthlyRent','emergencyFund','condoInflation',
-    'cgtPct','dstPct','transferTaxPct','regFeePct','notarialPct','bankFeesPct','renovationCost'];
+    'cgtPct','dstPct','transferTaxPct','regFeePct','notarialPct','bankFeesPct','renovationCost',
+    'cgtBasis','dstBasis','transferTaxBasis','regFeeBasis','notarialBasis','bankFeesBasis'];
   fields.forEach(k => { const el = document.getElementById(k); if (el) el.value = (profile[k] !== undefined ? profile[k] : ''); });
   ['interestRate','salaryGrowth','condoInflation'].forEach(k => {
     const sl = document.getElementById(k + 'Slider'); if (sl) sl.value = profile[k] || 0;
@@ -120,7 +121,8 @@ const SHARE_FIELDS = [
   'name','purchasePrice','unitSize','birValuePerSqm','loanAmount','condoDues',
   'interestRate','loanTerm','monthlyIncome','salaryGrowth','monthlyRent',
   'emergencyFund','condoInflation','cgtPct','dstPct','transferTaxPct',
-  'regFeePct','notarialPct','bankFeesPct','renovationCost'
+  'regFeePct','notarialPct','bankFeesPct','renovationCost',
+  'cgtBasis','dstBasis','transferTaxBasis','regFeeBasis','notarialBasis','bankFeesBasis'
 ];
 
 function encodeProfiles(profilesArr, active) {
@@ -252,7 +254,13 @@ function getInputs() {
     regFeePct:      g('regFeePct')      || 0.35,
     notarialPct:    g('notarialPct')    || 1,
     bankFeesPct:    g('bankFeesPct')    || 1.5,
-    renovationCost: g('renovationCost')
+    renovationCost: g('renovationCost'),
+    cgtBasis:         document.getElementById('cgtBasis')?.value || 'higher',
+    dstBasis:         document.getElementById('dstBasis')?.value || 'higher',
+    transferTaxBasis: document.getElementById('transferTaxBasis')?.value || 'higher',
+    regFeeBasis:      document.getElementById('regFeeBasis')?.value || 'higher',
+    notarialBasis:    document.getElementById('notarialBasis')?.value || 'higher',
+    bankFeesBasis:    document.getElementById('bankFeesBasis')?.value || 'loan'
   };
 }
 
@@ -269,14 +277,23 @@ function calculate(inp) {
   // Upfront — parameterized fees
   const downPayment   = Math.max(0, inp.purchasePrice - inp.loanAmount);
   const birValue      = inp.birValuePerSqm * inp.unitSize;
+  const higherValue   = Math.max(inp.purchasePrice, birValue);
+  
+  const getBase = (basis) => {
+    if (basis === 'higher') return higherValue;
+    if (basis === 'bir') return birValue;
+    if (basis === 'loan') return inp.loanAmount;
+    return inp.purchasePrice;
+  };
+
+  const cgtTotal      = (inp.cgtPct / 100) * getBase(inp.cgtBasis);
   const sellerCGT     = (inp.cgtPct / 100) * inp.purchasePrice;
-  const birCGT        = (inp.cgtPct / 100) * birValue;
-  const cgtShortfall  = Math.max(0, birCGT - sellerCGT);
-  const dst           = (inp.dstPct / 100) * inp.purchasePrice;
-  const transferTax   = (inp.transferTaxPct / 100) * inp.purchasePrice;
-  const regFee        = (inp.regFeePct / 100) * inp.purchasePrice;
-  const notarial      = (inp.notarialPct / 100) * inp.purchasePrice;
-  const bankFees      = (inp.bankFeesPct / 100) * inp.loanAmount;
+  const cgtShortfall  = Math.max(0, cgtTotal - sellerCGT);
+  const dst           = (inp.dstPct / 100) * getBase(inp.dstBasis);
+  const transferTax   = (inp.transferTaxPct / 100) * getBase(inp.transferTaxBasis);
+  const regFee        = (inp.regFeePct / 100) * getBase(inp.regFeeBasis);
+  const notarial      = (inp.notarialPct / 100) * getBase(inp.notarialBasis);
+  const bankFees      = (inp.bankFeesPct / 100) * getBase(inp.bankFeesBasis);
   const renovation    = inp.renovationCost || 0;
   const totalUpfront  = cgtShortfall + dst + transferTax + regFee + notarial + bankFees;
   const grandTotal    = downPayment + totalUpfront + renovation;
@@ -390,16 +407,23 @@ function render(inp, r) {
   dtiBar.className = 'dti-bar ' + (r.dti > 50 ? 'danger' : r.dti > 35 ? 'warn' : '');
 
   // Upfront grid
+  const getBasisLabel = (basis) => {
+    if (basis === 'higher') return inp.purchasePrice >= r.birValue ? 'price (higher)' : 'BIR value (higher)';
+    if (basis === 'bir') return 'BIR value';
+    if (basis === 'loan') return 'loan amount';
+    return 'price';
+  };
+
   const upfrontItems = [
     { label: '⬇️ Down Payment', value: peso(r.downPayment), note: 'Purchase price − Loan amount', cls: 'upfront-down' },
     { label: 'BIR / Taxable Value', value: peso(r.birValue), note: inp.birValuePerSqm.toLocaleString() + ' × ' + inp.unitSize + ' sqm' },
     { label: `Seller's CGT (${inp.cgtPct}%)`, value: peso(r.sellerCGT), note: inp.cgtPct + '% of purchase price' },
-    { label: 'CGT Shortfall (Buyer)', value: peso(r.cgtShortfall), note: 'BIR CGT minus seller CGT' },
-    { label: `DST (${inp.dstPct}%)`, value: peso(r.dst), note: inp.dstPct + '% of purchase price' },
-    { label: `Transfer Tax (${inp.transferTaxPct}%)`, value: peso(r.transferTax), note: inp.transferTaxPct + '% of purchase price' },
-    { label: `Registration (${inp.regFeePct}%)`, value: peso(r.regFee), note: inp.regFeePct + '% of purchase price' },
-    { label: `Notarial (${inp.notarialPct}%)`, value: peso(r.notarial), note: inp.notarialPct + '% of purchase price' },
-    { label: `Bank Fees & Ins. (${inp.bankFeesPct}%)`, value: peso(r.bankFees), note: inp.bankFeesPct + '% of loan amount' },
+    { label: 'CGT Shortfall (Buyer)', value: peso(r.cgtShortfall), note: 'Total CGT minus seller CGT' },
+    { label: `DST (${inp.dstPct}%)`, value: peso(r.dst), note: inp.dstPct + '% of ' + getBasisLabel(inp.dstBasis) },
+    { label: `Transfer Tax (${inp.transferTaxPct}%)`, value: peso(r.transferTax), note: inp.transferTaxPct + '% of ' + getBasisLabel(inp.transferTaxBasis) },
+    { label: `Registration (${inp.regFeePct}%)`, value: peso(r.regFee), note: inp.regFeePct + '% of ' + getBasisLabel(inp.regFeeBasis) },
+    { label: `Notarial (${inp.notarialPct}%)`, value: peso(r.notarial), note: inp.notarialPct + '% of ' + getBasisLabel(inp.notarialBasis) },
+    { label: `Bank Fees & Ins. (${inp.bankFeesPct}%)`, value: peso(r.bankFees), note: inp.bankFeesPct + '% of ' + getBasisLabel(inp.bankFeesBasis) },
     { label: '🔨 Renovation Budget', value: peso(r.renovation), note: r.renovation > 0 ? 'Fit-out / improvements' : 'Not set', cls: r.renovation > 0 ? 'upfront-reno' : 'upfront-dim' },
     { label: '💸 Closing Fees Subtotal', value: peso(r.totalUpfront), note: 'CGT shortfall + taxes + fees', cls: 'upfront-total' },
     { label: '🏦 Grand Total Cash Needed', value: peso(r.grandTotal), note: 'Down pmt + closing fees + renovation', cls: 'upfront-grand' }
@@ -629,10 +653,13 @@ document.addEventListener('DOMContentLoaded', () => {
   syncSlider('salaryGrowthSlider', 'salaryGrowth');
   syncSlider('condoInflationSlider', 'condoInflation');
 
-  // live update all non-slider inputs
-  document.querySelectorAll('input').forEach(el => {
+  // live update all non-slider inputs and selects
+  document.querySelectorAll('input, select').forEach(el => {
     if (!el.classList.contains('slider') && el.id !== 'interestRate' && el.id !== 'salaryGrowth' && el.id !== 'condoInflation') {
       el.addEventListener('input', runAnalysis);
+      if (el.tagName === 'SELECT') {
+        el.addEventListener('change', runAnalysis);
+      }
     }
   });
 

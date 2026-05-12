@@ -653,10 +653,23 @@ body {
   border-left: 1px solid var(--border); height: 100%;
   display: flex; align-items: center;
 }
-.fee-basis {
+select.fee-basis {
   font-size: 0.6rem; background: var(--surface3);
   padding: 1px 5px; border-radius: 4px; color: var(--text-dim);
   margin-left: 4px; vertical-align: middle;
+  border: 1px solid transparent;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  appearance: auto;
+}
+select.fee-basis:hover, select.fee-basis:focus {
+  border-color: rgba(108,99,255,0.5);
+  color: var(--text-muted);
+}
+select.fee-basis option {
+  background: var(--surface2);
+  color: var(--text);
 }
 
 /* ===== UPFRONT CARD VARIANTS ===== */

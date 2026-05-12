@@ -189,42 +189,42 @@
 
         <div class="fees-grid">
           <div class="input-group">
-            <label for="cgtPct">CGT % <span class="fee-basis">BIR value</span></label>
+            <label for="cgtPct">CGT % <select id="cgtBasis" class="fee-basis"><option value="higher" selected>higher</option><option value="price">price</option><option value="bir">BIR value</option></select></label>
             <div class="fee-input-wrap">
               <input type="number" id="cgtPct" value="6" min="0" max="20" step="0.1" />
               <span class="fee-pct-suffix">%</span>
             </div>
           </div>
           <div class="input-group">
-            <label for="dstPct">DST % <span class="fee-basis">price</span></label>
+            <label for="dstPct">DST % <select id="dstBasis" class="fee-basis"><option value="higher" selected>higher</option><option value="price">price</option><option value="bir">BIR value</option></select></label>
             <div class="fee-input-wrap">
               <input type="number" id="dstPct" value="1.5" min="0" max="10" step="0.1" />
               <span class="fee-pct-suffix">%</span>
             </div>
           </div>
           <div class="input-group">
-            <label for="transferTaxPct">Transfer Tax % <span class="fee-basis">price</span></label>
+            <label for="transferTaxPct">Transfer Tax % <select id="transferTaxBasis" class="fee-basis"><option value="higher" selected>higher</option><option value="price">price</option><option value="bir">BIR value</option></select></label>
             <div class="fee-input-wrap">
               <input type="number" id="transferTaxPct" value="0.75" min="0" max="10" step="0.05" />
               <span class="fee-pct-suffix">%</span>
             </div>
           </div>
           <div class="input-group">
-            <label for="regFeePct">Registration % <span class="fee-basis">price</span></label>
+            <label for="regFeePct">Registration % <select id="regFeeBasis" class="fee-basis"><option value="higher" selected>higher</option><option value="price">price</option><option value="bir">BIR value</option></select></label>
             <div class="fee-input-wrap">
               <input type="number" id="regFeePct" value="0.35" min="0" max="5" step="0.05" />
               <span class="fee-pct-suffix">%</span>
             </div>
           </div>
           <div class="input-group">
-            <label for="notarialPct">Notarial % <span class="fee-basis">price</span></label>
+            <label for="notarialPct">Notarial % <select id="notarialBasis" class="fee-basis"><option value="higher" selected>higher</option><option value="price">price</option><option value="bir">BIR value</option></select></label>
             <div class="fee-input-wrap">
               <input type="number" id="notarialPct" value="1" min="0" max="5" step="0.1" />
               <span class="fee-pct-suffix">%</span>
             </div>
           </div>
           <div class="input-group">
-            <label for="bankFeesPct">Bank Fees % <span class="fee-basis">loan</span></label>
+            <label for="bankFeesPct">Bank Fees % <select id="bankFeesBasis" class="fee-basis"><option value="loan" selected>loan</option><option value="higher">higher</option><option value="price">price</option><option value="bir">BIR value</option></select></label>
             <div class="fee-input-wrap">
               <input type="number" id="bankFeesPct" value="1.5" min="0" max="10" step="0.1" />
               <span class="fee-pct-suffix">%</span>
