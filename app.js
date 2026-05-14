@@ -1,26 +1,26 @@
 'use strict';
 
 // \u2500\u2500 SEED PROFILES \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-const FEE_DEFAULTS = { cgtPct: 6, dstPct: 1.5, transferTaxPct: 0.75, regFeePct: 0.35, notarialPct: 1, bankFeesPct: 1.5, renovationCost: 0, cgtBasis: 'higher', dstBasis: 'higher', transferTaxBasis: 'higher', regFeeBasis: 'higher', notarialBasis: 'higher', bankFeesBasis: 'loan' };
+const FEE_DEFAULTS = { addDownpaymentPct: 10, cgtPct: 6, dstPct: 1.5, transferTaxPct: 0.75, regFeePct: 0.35, notarialPct: 1, bankFeesPct: 1.5, renovationCost: 0, cgtBasis: 'higher', dstBasis: 'higher', transferTaxBasis: 'higher', regFeeBasis: 'higher', notarialBasis: 'higher', bankFeesBasis: 'loan' };
 
 const SEED_PROFILES = [
   {
-    id: 'pine-crest', name: 'Pine Crest',
-    purchasePrice: 4615000, unitSize: 59.93, birValuePerSqm: 138000,
+    id: 'prop-a', name: 'Sample Property A',
+    purchasePrice: 4615000, addDownpaymentPct: 10, unitSize: 59.93, birValuePerSqm: 138000,
     loanAmount: 4000000, condoDues: 6800, interestRate: 4, loanTerm: 25,
     monthlyIncome: 60000, salaryGrowth: 5, monthlyRent: 25000, emergencyFund: '', condoInflation: 5,
     ...FEE_DEFAULTS
   },
   {
-    id: 'smdc-wind', name: 'SMDC Wind Residences',
-    purchasePrice: 3800000, unitSize: 45.50, birValuePerSqm: 125000,
+    id: 'prop-b', name: 'Sample Property B',
+    purchasePrice: 3800000, addDownpaymentPct: 10, unitSize: 45.50, birValuePerSqm: 125000,
     loanAmount: 3200000, condoDues: 5500, interestRate: 4, loanTerm: 25,
     monthlyIncome: 60000, salaryGrowth: 5, monthlyRent: 20000, emergencyFund: '', condoInflation: 5,
     ...FEE_DEFAULTS
   },
   {
-    id: 'alveo-flexi', name: 'Alveo Flexi Series',
-    purchasePrice: 7200000, unitSize: 75.00, birValuePerSqm: 155000,
+    id: 'prop-c', name: 'Sample Property C',
+    purchasePrice: 7200000, addDownpaymentPct: 10, unitSize: 75.00, birValuePerSqm: 155000,
     loanAmount: 6000000, condoDues: 9500, interestRate: 4, loanTerm: 25,
     monthlyIncome: 90000, salaryGrowth: 5, monthlyRent: 32000, emergencyFund: '', condoInflation: 5,
     ...FEE_DEFAULTS
@@ -30,8 +30,8 @@ const SEED_PROFILES = [
 const DEFAULTS = SEED_PROFILES[0];
 
 // \u2500\u2500 PROFILE MANAGER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-const STORAGE_KEY = 'condoAnalyzerProfiles_v1';
-const ACTIVE_KEY  = 'condoAnalyzerActive_v1';
+const STORAGE_KEY = 'financialTrackerProfiles_v1';
+const ACTIVE_KEY  = 'financialTrackerActive_v1';
 
 function loadProfiles() {
   try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : JSON.parse(JSON.stringify(SEED_PROFILES)); }
@@ -81,7 +81,7 @@ function saveCurrentToProfile() {
 }
 
 function loadProfileIntoInputs(profile) {
-  const fields = ['purchasePrice','unitSize','birValuePerSqm','loanAmount','condoDues',
+  const fields = ['purchasePrice','addDownpaymentPct','unitSize','birValuePerSqm','loanAmount','condoDues',
     'interestRate','loanTerm','monthlyIncome','salaryGrowth','monthlyRent','emergencyFund','condoInflation',
     'cgtPct','dstPct','transferTaxPct','regFeePct','notarialPct','bankFeesPct','renovationCost',
     'cgtBasis','dstBasis','transferTaxBasis','regFeeBasis','notarialBasis','bankFeesBasis'];
@@ -118,7 +118,7 @@ function deleteActiveProfile() {
 
 // ── SHARE / URL IMPORT ────────────────────────────────────
 const SHARE_FIELDS = [
-  'name','purchasePrice','unitSize','birValuePerSqm','loanAmount','condoDues',
+  'name','purchasePrice','addDownpaymentPct','unitSize','birValuePerSqm','loanAmount','condoDues',
   'interestRate','loanTerm','monthlyIncome','salaryGrowth','monthlyRent',
   'emergencyFund','condoInflation','cgtPct','dstPct','transferTaxPct',
   'regFeePct','notarialPct','bankFeesPct','renovationCost',
@@ -235,7 +235,9 @@ function pmt(rate, nper, pv) {
 function getInputs() {
   const g = id => parseFloat(document.getElementById(id).value) || 0;
   return {
+    name:           document.getElementById('profileName').value,
     purchasePrice:  g('purchasePrice'),
+    addDownpaymentPct: g('addDownpaymentPct') || 0,
     unitSize:       g('unitSize'),
     birValuePerSqm: g('birValuePerSqm'),
     loanAmount:     g('loanAmount'),
@@ -275,7 +277,11 @@ function calculate(inp) {
   const dti = (totalMonthly / inp.monthlyIncome) * 100;
 
   // Upfront — parameterized fees
-  const downPayment   = Math.max(0, inp.purchasePrice - inp.loanAmount);
+  const addDownpaymentVal = (inp.addDownpaymentPct / 100) * inp.purchasePrice;
+  const netPrice      = inp.purchasePrice - addDownpaymentVal;
+  const downPayment   = Math.max(0, netPrice - inp.loanAmount);
+  const totalCashDP   = addDownpaymentVal + downPayment;
+
   const birValue      = inp.birValuePerSqm * inp.unitSize;
   const higherValue   = Math.max(inp.purchasePrice, birValue);
   
@@ -283,7 +289,7 @@ function calculate(inp) {
     if (basis === 'higher') return higherValue;
     if (basis === 'bir') return birValue;
     if (basis === 'loan') return inp.loanAmount;
-    return inp.purchasePrice;
+    return inp.purchasePrice; // usually gross price is tax base
   };
 
   const cgtTotal      = (inp.cgtPct / 100) * getBase(inp.cgtBasis);
@@ -296,7 +302,7 @@ function calculate(inp) {
   const bankFees      = (inp.bankFeesPct / 100) * getBase(inp.bankFeesBasis);
   const renovation    = inp.renovationCost || 0;
   const totalUpfront  = cgtShortfall + dst + transferTax + regFee + notarial + bankFees;
-  const grandTotal    = downPayment + totalUpfront + renovation;
+  const grandTotal    = totalCashDP + totalUpfront + renovation;
 
   // 25-yr buy vs rent
   const termYrs = inp.loanTerm;
@@ -325,7 +331,7 @@ function calculate(inp) {
 
   return {
     monthlyAmt, totalLoanCost, totalInterest, totalMonthly,
-    remaining, dti, downPayment, birValue, sellerCGT, cgtShortfall,
+    remaining, dti, addDownpaymentVal, downPayment, totalCashDP, birValue, sellerCGT, cgtShortfall,
     dst, transferTax, regFee, notarial, bankFees, renovation, totalUpfront, grandTotal,
     totalBuy, totalRent, buyvrentDiff, stressScenarios, score
   };
@@ -350,9 +356,9 @@ function scoreEngine(inp, monthlyAmt, dti, totalUpfront) {
   const intScore = dtiHigh < 50 ? 2 : dtiHigh < 65 ? 1 : 0;
   items.push({ label: 'Interest Rate Shock (@ 9%)', score: intScore, max: 2, note: 'DTI @ 9%: ' + pct(dtiHigh) });
 
-  // 4. Condo inflation risk (max 2)
+  // 4. Dues inflation risk (max 2)
   const inflScore = inp.condoInflation <= 3 ? 2 : inp.condoInflation <= 6 ? 1 : 0;
-  items.push({ label: 'Condo Dues Inflation (' + pct(inp.condoInflation) + '/yr)', score: inflScore, max: 2, note: inflScore === 2 ? 'Low risk' : inflScore === 1 ? 'Moderate' : 'High risk' });
+  items.push({ label: 'Monthly Dues Inflation (' + pct(inp.condoInflation) + '/yr)', score: inflScore, max: 2, note: inflScore === 2 ? 'Low risk' : inflScore === 1 ? 'Moderate' : 'High risk' });
 
   // 5. Cash buffer (max 3)
   const ef = inp.emergencyFund || 0;
@@ -415,7 +421,8 @@ function render(inp, r) {
   };
 
   const upfrontItems = [
-    { label: '⬇️ Down Payment', value: peso(r.downPayment), note: 'Purchase price − Loan amount', cls: 'upfront-down' },
+    { label: `⬇️ Spot DP (${inp.addDownpaymentPct}%)`, value: peso(r.addDownpaymentVal), note: inp.addDownpaymentPct + '% of purchase price', cls: 'upfront-down' },
+    { label: '⬇️ Remaining Down Payment', value: peso(r.downPayment), note: 'Balance before loan', cls: 'upfront-down' },
     { label: 'BIR / Taxable Value', value: peso(r.birValue), note: inp.birValuePerSqm.toLocaleString() + ' × ' + inp.unitSize + ' sqm' },
     { label: `Seller's CGT (${inp.cgtPct}%)`, value: peso(r.sellerCGT), note: inp.cgtPct + '% of purchase price' },
     { label: 'CGT Shortfall (Buyer)', value: peso(r.cgtShortfall), note: 'Total CGT minus seller CGT' },
@@ -426,7 +433,7 @@ function render(inp, r) {
     { label: `Bank Fees & Ins. (${inp.bankFeesPct}%)`, value: peso(r.bankFees), note: inp.bankFeesPct + '% of ' + getBasisLabel(inp.bankFeesBasis) },
     { label: '🔨 Renovation Budget', value: peso(r.renovation), note: r.renovation > 0 ? 'Fit-out / improvements' : 'Not set', cls: r.renovation > 0 ? 'upfront-reno' : 'upfront-dim' },
     { label: '💸 Closing Fees Subtotal', value: peso(r.totalUpfront), note: 'CGT shortfall + taxes + fees', cls: 'upfront-total' },
-    { label: '🏦 Grand Total Cash Needed', value: peso(r.grandTotal), note: 'Down pmt + closing fees + renovation', cls: 'upfront-grand' }
+    { label: '🏦 Grand Total Cash Needed', value: peso(r.grandTotal), note: 'Total DP + closing fees + renovation', cls: 'upfront-grand' }
   ];
   document.getElementById('upfrontGrid').innerHTML = upfrontItems.map(i =>
     `<div class="upfront-item ${i.cls||''}">
@@ -499,7 +506,7 @@ function renderCharts(inp, r) {
   incomeExpChart = mkChart('incomeExpChart', {
     type: 'bar',
     data: {
-      labels: ['Monthly Net Income', 'Loan Payment', 'Condo Dues', 'Total Housing', 'Remaining'],
+      labels: ['Monthly Net Income', 'Loan Payment', 'Monthly Dues', 'Total Housing', 'Remaining'],
       datasets: [{
         data: [inp.monthlyIncome, r.monthlyAmt, inp.condoDues, r.totalMonthly, r.remaining],
         backgroundColor: ['#6c63ff','#f43f5e','#fb923c','#facc15','#22c55e'],
@@ -521,7 +528,7 @@ function renderCharts(inp, r) {
   pieChart = mkChart('pieChart', {
     type: 'doughnut',
     data: {
-      labels: ['Loan Amortization', 'Condo Dues', 'Remaining Income'],
+      labels: ['Loan Amortization', 'Monthly Dues', 'Remaining Income'],
       datasets: [{
         data: [r.monthlyAmt, inp.condoDues, Math.max(0, r.remaining)],
         backgroundColor: ['#6c63ff','#fb923c','#22c55e'],
@@ -600,11 +607,11 @@ function buildExplain(inp, r) {
   const safe = r.score.total >= 10, caution = r.score.total >= 7;
   return `
     <h3>🏢 Property Overview</h3>
-    <p>You are analyzing <span class="highlight">Pine Crest by Vista Residences</span> at <span class="highlight">${peso(inp.purchasePrice)}</span> (${inp.unitSize} sqm @ ₱${Math.round(inp.purchasePrice/inp.unitSize).toLocaleString()}/sqm).</p>
+    <p>You are analyzing <span class="highlight">${inp.name || 'this property'}</span> at <span class="highlight">${peso(inp.purchasePrice)}</span> (${inp.unitSize} sqm @ ₱${Math.round(inp.purchasePrice/inp.unitSize).toLocaleString()}/sqm).</p>
     <h3>📊 Financial Snapshot</h3>
-    <p>With a <span class="highlight">${pct(inp.interestRate)}</span> fixed rate over <span class="highlight">${inp.loanTerm} years</span>, your monthly loan payment is <span class="highlight">${peso(r.monthlyAmt)}</span>. Adding condo dues, total housing cost is <span class="highlight">${peso(r.totalMonthly)}</span> — <span class="${r.dti > 50 ? 'danger-text' : r.dti > 35 ? 'warn-text' : 'safe-text'}">${pct(r.dti)} of your ₱${inp.monthlyIncome.toLocaleString()} income</span>.</p>
+    <p>With a <span class="highlight">${pct(inp.interestRate)}</span> fixed rate over <span class="highlight">${inp.loanTerm} years</span>, your monthly loan payment is <span class="highlight">${peso(r.monthlyAmt)}</span>. Adding monthly dues, total housing cost is <span class="highlight">${peso(r.totalMonthly)}</span> — <span class="${r.dti > 50 ? 'danger-text' : r.dti > 35 ? 'warn-text' : 'safe-text'}">${pct(r.dti)} of your ₱${inp.monthlyIncome.toLocaleString()} income</span>.</p>
     <h3>💸 Upfront Cash</h3>
-    <p>Beyond the down payment, you will need approximately <span class="highlight">${peso(r.totalUpfront)}</span> to cover CGT shortfall, DST, transfer taxes, registration, notarial, and bank fees. The BIR-assessed value of <span class="highlight">${peso(r.birValue)}</span> is significantly higher than the purchase price — a key driver of the CGT shortfall.</p>
+    <p>Beyond the down payment of <span class="highlight">${peso(r.totalCashDP)}</span> (which includes a <span class="highlight">${inp.addDownpaymentPct}% spot DP</span> of ${peso(r.addDownpaymentVal)}), you will need approximately <span class="highlight">${peso(r.totalUpfront)}</span> to cover CGT shortfall, DST, transfer taxes, registration, notarial, and bank fees. The BIR-assessed value of <span class="highlight">${peso(r.birValue)}</span> is significantly higher than the purchase price — a key driver of the CGT shortfall.</p>
     <h3>🏠 Buy vs. Rent Over ${inp.loanTerm} Years</h3>
     <p>Total buying cost: <span class="highlight danger-text">${peso(r.totalBuy)}</span>. Total renting cost: <span class="highlight safe-text">${peso(r.totalRent)}</span>. ${r.buyvrentDiff > 0 ? `Buying costs <span class="danger-text">${peso(r.buyvrentDiff)} more</span> over ${inp.loanTerm} years, but you gain equity and property appreciation.` : `Buying saves you <span class="safe-text">${peso(Math.abs(r.buyvrentDiff))}</span> over ${inp.loanTerm} years.`}</p>
     <h3>⚡ Rate Shock Risk</h3>

@@ -1,6 +1,6 @@
-# 🏢 Condo Financial Analyzer
+# 🏢 Financial Tracker
 
-An interactive, browser-based financial decision tool for analyzing condo purchases in the **Philippine real estate market**.
+An interactive, browser-based financial decision tool for analyzing real estate investments in the **Philippine market**.
 
 🔗 **[Live Demo → GitHub Pages](https://your-username.github.io/FINANCIAL-CHECKR/)**
 

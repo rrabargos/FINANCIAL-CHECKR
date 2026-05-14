@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Condo Financial Analyzer – Pine Crest Case Study | Philippines</title>
-  <meta name="description" content="Interactive condo financial decision analyzer for the Philippines. Analyze Pine Crest by Vista Residences – compare buy vs rent, risk scores, and lifetime cost projections." />
+  <title>Financial Tracker – Real Estate Investment Tool | Philippines</title>
+  <meta name="description" content="Interactive financial decision analyzer for real estate in the Philippines. Compare buy vs rent, risk scores, and lifetime cost projections." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -17,8 +17,8 @@
       <div class="header-logo">
         <div class="logo-icon">🏢</div>
         <div class="header-titles">
-          <h1 class="app-title">Condo Financial Analyzer</h1>
-          <span class="app-subtitle" id="headerSubtitle">Philippines · Pine Crest Case Study</span>
+          <h1 class="app-title">Financial Tracker</h1>
+          <span class="app-subtitle" id="headerSubtitle">Philippines · Investment Analysis</span>
         </div>
       </div>
       <div class="header-badge" id="riskBadge">
@@ -65,7 +65,7 @@
       <div class="panel-header">
         <span class="panel-icon">⚙️</span>
         <div class="profile-name-wrap">
-          <input type="text" id="profileName" class="profile-name-input" value="Pine Crest" maxlength="32" />
+          <input type="text" id="profileName" class="profile-name-input" value="Sample Property" maxlength="32" />
         </div>
         <button class="reset-btn" id="resetBtn" title="Reset to defaults">↺ Reset</button>
       </div>
@@ -79,6 +79,14 @@
           <div class="input-with-icon">
             <span class="currency-prefix">₱</span>
             <input type="number" id="purchasePrice" value="4615000" min="0" step="1000" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="addDownpaymentPct">Additional Downpayment (%)</label>
+          <div class="slider-value-row">
+            <input type="number" id="addDownpaymentPct" value="10" min="0" max="100" step="0.5" class="slider-input" />
+            <span class="slider-pct">%</span>
           </div>
         </div>
 
@@ -104,7 +112,7 @@
         </div>
 
         <div class="input-group">
-          <label for="condoDues">Monthly Condo Dues (₱)</label>
+          <label for="condoDues">Monthly Dues (₱)</label>
           <div class="input-with-icon">
             <span class="currency-prefix">₱</span>
             <input type="number" id="condoDues" value="6800" min="0" step="100" />
@@ -174,7 +182,7 @@
         </div>
 
         <div class="input-group">
-          <label for="condoInflation">Condo Dues Annual Inflation (%)</label>
+          <label for="condoInflation">Monthly Dues Annual Inflation (%)</label>
           <input type="range" id="condoInflationSlider" min="0" max="15" step="0.5" value="5" class="slider" />
           <div class="slider-value-row">
             <input type="number" id="condoInflation" value="5" min="0" max="15" step="0.5" class="slider-input" />
@@ -286,7 +294,7 @@
           <div class="metric-icon">🏢</div>
           <div class="card-title">Total Monthly Cost</div>
           <div class="metric-value" id="metTotalMonthly">₱–</div>
-          <div class="metric-label">Loan + Condo Dues</div>
+          <div class="metric-label">Loan + Monthly Dues</div>
         </div>
         <div class="card metric-card">
           <div class="metric-icon">💰</div>
@@ -390,7 +398,7 @@
         </div>
         <div style="margin-top:16px">
           <label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:6px">Profile Name</label>
-          <input type="text" id="newProfileName" class="profile-name-input" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:0.9rem" placeholder="e.g. SMDC Wind Residences" maxlength="32" />
+          <input type="text" id="newProfileName" class="profile-name-input" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:0.9rem" placeholder="e.g. Property Name" maxlength="32" />
         </div>
       </div>
     </div>
